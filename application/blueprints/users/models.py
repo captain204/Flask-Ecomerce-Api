@@ -68,5 +68,5 @@ class UserSchema(ma.Schema):
     name = fields.String(required=True,validate=validate.Length(3))
     email = fields.String(required=True,validate=validate.Length(3))
     password = fields.String(required=True,validate=validate.Length(6))
-    url = ma.URLFor('users.userresource',id='<id>',_external=True)
+    url = ma.URLFor('user.usersresource',id='<id>',_external=True)
 

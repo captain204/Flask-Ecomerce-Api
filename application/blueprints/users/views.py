@@ -28,7 +28,7 @@ class AuthenticationRequiredResource(Resource):
 
 
 
-class UserResource(AuthenticationRequiredResource):
+class UsersResource(AuthenticationRequiredResource):
     def get(self, id):
         user = User.query.get_or_404(id)
         result = user_schema.dump(user)
@@ -45,7 +45,7 @@ class UserListResource(Resource):
         pagination_helper = PaginationHelper(
             request,
             query=User.query,
-            resource_for_url='photo.userlistresource',
+            resource_for_url='users.userlistresource',
             key_name='results',
             schema=user_schema)
         result = pagination_helper.paginate_query()
@@ -89,5 +89,5 @@ class UserListResource(Resource):
 
 
 api.add_resource(UserListResource, '/users/')
-api.add_resource(UserResource, '/users/<int:id>')
+api.add_resource(UsersResource, '/users/<int:id>')
 
