@@ -1,10 +1,13 @@
 from flask import Flask
-
+from application.blueprints.products import product
+from application.blueprints.categories import category
 from application.blueprints.users import user
 from application.extensions import db,auth,migrate,ma
 
 #Models
 from application.blueprints.users.models import User
+from application.blueprints.products.models import Product
+from application.blueprints.categories.models import Category,CategoriesSchema
 
 
 
@@ -24,6 +27,7 @@ def create_app(settings_override=None):
         app.config.update(settings_override)
 
     app.register_blueprint(user)
+    app.register_blueprint(product)
     #app.register_blueprint(product)
    
     extensions(app)

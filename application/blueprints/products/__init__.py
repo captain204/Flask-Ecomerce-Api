@@ -1,0 +1,1 @@
+from application.blueprints.categories.views import category

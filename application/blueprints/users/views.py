@@ -2,10 +2,11 @@ from flask import Blueprint, request, jsonify, make_response
 from flask_restful import Api,Resource
 from helpers.http_status import HttpStatus 
 from application.blueprints.users.models import User,UserSchema 
-from sqlalchemy.exc import SQLAlchemyError
 from application.extensions import auth
+from sqlalchemy.exc import SQLAlchemyError
 from helpers.pagination import PaginationHelper
-from flask import g
+from helpers.auth import verify_user_password, AuthenticationRequiredResource
+
 
 
 
@@ -13,29 +14,12 @@ user_schema = UserSchema()
 user = Blueprint('user', __name__)
 api = Api(user)
 
-@auth.verify_password
-def verify_user_password(name, password):
-    user = User.query.filter_by(name=name).first()
-    if not user or not user.verify_password(password):
-        return False
-    g.user = user
-    return True
-
-
-class AuthenticationRequiredResource(Resource):
-    method_decorators = [auth.login_required]
-    user_schema = UserSchema()
-
-
 
 class UsersResource(AuthenticationRequiredResource):
     def get(self, id):
         user = User.query.get_or_404(id)
         result = user_schema.dump(user)
         return result
-
-
-
 
 
 class UserListResource(Resource):
@@ -82,10 +66,6 @@ class UserListResource(Resource):
             db.session.rollback()
             response = {"error": str(e)}
             return response, HttpStatus.bad_request_400.value
-
-
-
-
 
 
 api.add_resource(UserListResource, '/users/')
