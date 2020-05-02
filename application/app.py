@@ -1,50 +1,18 @@
 from flask import Flask
-from application.blueprints.products import product
-from application.blueprints.categories import category
-from application.blueprints.users import user
-from application.extensions import db,auth,migrate,ma
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from application.models import db
+from application.views import product_blueprint
 
-#Models
-from application.blueprints.users.models import User
-from application.blueprints.products.models import Product
-from application.blueprints.categories.models import Category,CategoriesSchema
-
-
-
-def create_app(settings_override=None):
-    """
-    Create a Flask application using the app factory pattern.
-
-    :param settings_override: Override settings
-    :return: Flask app
-    """
+def create_app(config_filename):
     app = Flask(__name__, instance_relative_config=True)
-
-    app.config.from_object('config.settings')
-    app.config.from_pyfile('settings.py', silent=True)
-
-    if settings_override:
-        app.config.update(settings_override)
-
-    app.register_blueprint(user)
-    app.register_blueprint(product)
-    #app.register_blueprint(product)
-   
-    extensions(app)
+    app.config.from_object(config_filename)
+    db.init_app(app)
+    app.register_blueprint(product_blueprint)
+    migrate = Migrate(app, db)
     return app
 
 
-def extensions(app):
-    """
-    Register 0 or more extensions (mutates the app passed in).
+app = create_app('config')
 
-    :param app: Flask application instance
-    :return: None
-    """
 
-    db.init_app(app)
-    #login_manager.init_app(app)
-    migrate.init_app(app,db)
-    ma.init_app(app)
-
-    return None

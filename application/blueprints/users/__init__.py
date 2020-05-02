@@ -1,1 +1,0 @@
-from application.blueprints.users.views import user

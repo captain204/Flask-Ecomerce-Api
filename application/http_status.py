@@ -69,7 +69,3 @@ class HttpStatus(Enum):
         return 500 <= status_code.value <= 599
 
   
-
-
-
-
