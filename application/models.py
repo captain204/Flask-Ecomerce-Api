@@ -106,11 +106,11 @@ class ProductCategory(db.Model,ResourceAddUpdateDelete):
 
     @classmethod
     def is_name_unique(cls, id, name):
-        existing_intervention_category = cls.query.filter_by(name=name).first()
-        if existing_intervention_category is None:
+        existing_product_category = cls.query.filter_by(name=name).first()
+        if existing_product_category is None:
             return True
         else:
-            if existing_intervention_category.id == id:
+            if existing_product_category.id == id:
                 return True
             else:
                 return False
@@ -134,33 +134,24 @@ class ProductCategorySchema(ma.Schema):
 
 class ProductSchema(ma.Schema):
     id = fields.Integer(dump_only=True)
+    name = fields.String(required=True, 
+        validate=validate.Length(3))
     price = fields.Integer()
     description= fields.String(required=True, 
-        validate=validate.Length(3))
+        validate=validate.Length(3)),
     product_category = fields.Nested(ProductCategorySchema, 
         only=['id', 'url', 'name'], 
         required=True)
     tags = fields.String(required=True, 
         validate=validate.Length(3))
-    url = ma.URLFor('product.productresource', 
+    url = ma.URLFor('application.productresource', 
         id='<id>', 
         _external=True)
     
 
 
-    @pre_load
-    def process_intervention_category(self, data,**kwargs):
-        product_category = data.get('product_category')
-        if product_category:
-            if isinstance(product_category, dict):
-                product_category_name = product_category.get('name')
-            else:
-                product_category_name = product_category 
-            product_category_dict = dict(name=product_category_name)
-        else:
-            product_category_dict = {}
-        data['product_category'] =  product_category_dict
-        return data
+
+
 
 
 
