@@ -2,7 +2,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 SQLALCHEMY_ECHO = False
 SQLALCHEMY_TRACK_MODIFICATIONS = True
-SQLALCHEMY_DATABASE_URI ="postgresql:///products" 
+SQLALCHEMY_DATABASE_URI ="postgresql:///e-commerce-p" 
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 
 

@@ -68,22 +68,24 @@ class UserSchema(ma.Schema):
 
 class Product(db.Model,ResourceAddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), unique=True, nullable=False)
+    name = db.Column(db.String(250), nullable=False)
     price = db.Column(db.Integer, nullable=False)
-    description = db.Column(db.String(250), unique=True, nullable=False)
+    description = db.Column(db.String(250), nullable=False)
     product_category_id = db.Column(db.Integer, db.ForeignKey('product_category.id', ondelete='CASCADE'), nullable=False)
-    product_category = db.relationship('ProductCategory', backref=db.backref('products', lazy='dynamic' , order_by='Product.description'))
+    product_category = db.relationship('ProductCategory', backref=db.backref('products', lazy='dynamic' , order_by='Product.name'))
     tags = db.Column(db.String(250), nullable=False)
     creation_date = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
 
-    def __init__(self,name,price,description,tags):
+    def __init__(self,name,price,description,tags,product_category):
         self.name = name
         self.price = price
         self.description = description
+        self.product_category = product_category
         self.tags = tags
+        
 
     @classmethod
-    def is_name_unique(cls, id, description):
+    def is_name_unique(cls, id, name):
         existing_product_name = cls.query.filter_by(name=name).first()
         if existing_product_name is None:
             return True
@@ -123,13 +125,12 @@ class ProductCategorySchema(ma.Schema):
     # Minimum length = 3 characters
     name = fields.String(required=True, 
         validate=validate.Length(3))
-    url = ma.URLFor('product.productresource', 
+    url = ma.URLFor('product.productcategoryresource', 
         id='<id>', 
         _external=True)
-    interventions = fields.Nested('ProductSchema', 
+    products = fields.Nested('ProductSchema', 
         many=True, 
         exclude=('product_category',))
-
 
 
 class ProductSchema(ma.Schema):
@@ -138,22 +139,82 @@ class ProductSchema(ma.Schema):
         validate=validate.Length(3))
     price = fields.Integer()
     description= fields.String(required=True, 
-        validate=validate.Length(3)),
+        validate=validate.Length(3))
+    tags = fields.String(required=True, 
+        validate=validate.Length(3))
     product_category = fields.Nested(ProductCategorySchema, 
         only=['id', 'url', 'name'], 
         required=True)
-    tags = fields.String(required=True, 
-        validate=validate.Length(3))
-    url = ma.URLFor('application.productresource', 
+    url = ma.URLFor('product.productresource', 
         id='<id>', 
         _external=True)
-    
-
-
-
-
-
-
-
+  
 
     
+    @pre_load
+    def process_product_category(self, data,**kwargs):
+        product_category = data.get('product_category')
+        if product_category:
+            if isinstance(product_category, dict):
+                product_category_name = product_category.get('name')
+            else:
+                product_category_name = product_category 
+            product_category_dict = dict(name=product_category_name)
+        else:
+            product_category_dict = {}
+        data['product_category'] =  product_category_dict
+        return data
+
+
+    
+class Order(db.Model,ResourceAddUpdateDelete):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.String(250), nullable=False)
+    product = db.Column(db.String(250), nullable=False)
+    price = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.String(250), nullable=False)
+    fullname =db.Column(db.String(250), nullable=False)
+    address = db.Column(db.String(250), nullable=False)
+    shipping_type = db.Column(db.String(250), nullable=False)
+
+
+    def __init__(self, order_id, product,price,description,fullname,address,shipping_type):
+        self.order_id = order_id
+        self.product = product
+        self.price = price
+        self.description = description
+        self.fullname = fullname
+        self.address = address
+        self.shipping_type = shipping_type
+        
+    @classmethod
+    def is_order_unique(cls, id, order_id):
+        existing_order_id = cls.query.filter_by(order_id=order_id).first()
+        if existing_order_id is None:
+            return True
+        else:
+            if existing_order_id.id == id:
+                return True
+            else:
+                return False
+
+
+class OrderSchema(ma.Schema):
+    id = fields.Integer(dump_only=True)
+    order_id = fields.String(required=True, 
+        validate=validate.Length(3)) 
+    product= fields.String(required=True, 
+        validate=validate.Length(3))
+    price = fields.Integer()
+    description= fields.String(required=True, 
+        validate=validate.Length(3))
+    fullname = fields.String(required=True, 
+        validate=validate.Length(3))
+    address = fields.String(required=True, 
+        validate=validate.Length(3))
+    shipping_type= fields.String(required=True, 
+        validate=validate.Length(3))    
+    url = ma.URLFor('product.orderresource', 
+        id='<id>', 
+        _external=True)
+  
