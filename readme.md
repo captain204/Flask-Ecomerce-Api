@@ -1,3 +1,9 @@
+Mini e-commerce api built with flask
+
+
+
+
+
  { 
  	"order_id":"4536YN",
  	"product":"shorts",
